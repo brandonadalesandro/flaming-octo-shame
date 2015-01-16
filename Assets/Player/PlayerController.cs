@@ -5,7 +5,7 @@ public class PlayerController : MonoBehaviour {
 	private static float MAX_SPEED = 2.0f;
 
 	// changable constants
-	private float jump_speed = 200.0f;
+	private float jump_speed = 10.0f;
 	private float move_speed = .9f;
 	private int jumps_left = 2;
 
@@ -20,16 +20,20 @@ public class PlayerController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-		float input_x = Input.GetAxis ("Horizontal");
+		float input_x = Input.GetAxisRaw ("Horizontal");
 		if (Mathf.Abs(rigidbody2D.velocity.x) < MAX_SPEED) {
 			rigidbody2D.velocity += new Vector2(input_x * move_speed, 0);
 		}
 
-		if (Input.GetKeyDown(KeyCode.Space) && jumps_left >= 1) {
+		bool hanging = animator.GetBool("hanging");
+		if (Input.GetKeyDown(KeyCode.Space)) {
 			animator.SetBool("grounded", false);
-			rigidbody2D.velocity = new Vector2(rigidbody2D.velocity.x, 0);
-			rigidbody2D.AddForce(new Vector2(0, jump_speed));
-			jumps_left--;
+			if (hanging) {
+				rigidbody2D.velocity = new Vector2(jump_speed, jump_speed);
+			} else if (jumps_left > 0){
+				rigidbody2D.velocity = new Vector2(rigidbody2D.velocity.x, jump_speed);
+				jumps_left -= 1;
+			}
 		}
 
 		// Control the flipping of the sprite when going left/right
@@ -44,8 +48,7 @@ public class PlayerController : MonoBehaviour {
 
 	void OnCollisionEnter2D(Collision2D collision) {
 		if (collision.gameObject.tag == "Climbable") {
-			animator.SetBool ("hanging", true);
-			jumps_left = 1;
+			animator.SetBool ("hanging", true);	
 			rigidbody2D.gravityScale = 0.0f;
 		} else {
 			animator.SetBool ("grounded", true);
@@ -56,6 +59,8 @@ public class PlayerController : MonoBehaviour {
 	void OnCollisionExit2D(Collision2D collision) {
 		if (collision.gameObject.tag == "Climbable") {
 			animator.SetBool ("hanging", false);
+			rigidbody2D.gravityScale = 2.0f;
+			jumps_left = 1;
 		} else {
 			jumps_left = 2;
 		}
