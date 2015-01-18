@@ -1,20 +1,24 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class PlayerController : MonoBehaviour {
-	private static float MAX_SPEED = 2.0f;
+	
 
 	// changable constants
-	private float jump_speed = 10.0f;
-	private float move_speed = .9f;
-	private int jumps_left = 2;
+	public float MAX_SPEED = 3.0f;
+	public float MAX_JUMP = 3.0f;
+	public float jump_speed = 100.0f;
+	public float move_speed = .9f;
 
-	// should remain private to class
+	// Should remain private to class
 	protected Animator animator;
 	protected bool facing_right = true;
+	private int jumps_left = 2;
+	private float gravity_scale;
 
 	// Use this for initialization
-	void Start () {
+	void Start () {	
+		gravity_scale = rigidbody2D.gravityScale;
 		animator = GetComponent<Animator> ();
 	}
 	
@@ -26,12 +30,17 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		bool hanging = animator.GetBool("hanging");
-		if (Input.GetKeyDown(KeyCode.Space)) {
+		if (Input.GetKey(KeyCode.Space) && rigidbody2D.velocity.y <= MAX_JUMP) {
 			animator.SetBool("grounded", false);
-			if (hanging) {
-				rigidbody2D.velocity = new Vector2(jump_speed, jump_speed);
+			if (hanging && jumps_left > 0) {
+				if (!facing_right) {
+					rigidbody2D.AddForce(new Vector2(2*jump_speed/15, jump_speed), ForceMode2D.Impulse);//velocity = new Vector2(jump_speed, jump_speed);
+				} else {
+					rigidbody2D.AddForce(new Vector2(-2*jump_speed/15, jump_speed), ForceMode2D.Impulse);//.velocity = new Vector2(-jump_speed, jump_speed);
+				}
+				jumps_left -= 1;
 			} else if (jumps_left > 0){
-				rigidbody2D.velocity = new Vector2(rigidbody2D.velocity.x, jump_speed);
+				rigidbody2D.AddForce(new Vector2(rigidbody2D.velocity.x, jump_speed/3), ForceMode2D.Impulse);//rigidbody2D.velocity = new Vector2(rigidbody2D.velocity.x, jump_speed);
 				jumps_left -= 1;
 			}
 		}
@@ -41,28 +50,29 @@ public class PlayerController : MonoBehaviour {
 			Flip ();
 		} else if (rigidbody2D.velocity.x > 0 && !facing_right) {
 			Flip ();
-		}
+		} 
 
 		animator.SetFloat ("speed", Mathf.Abs (rigidbody2D.velocity.x));
 	}
 
+	
 	void OnCollisionEnter2D(Collision2D collision) {
+		jumps_left = 3;
 		if (collision.gameObject.tag == "Climbable") {
-			animator.SetBool ("hanging", true);	
+			animator.SetBool ("hanging", true);
 			rigidbody2D.gravityScale = 0.0f;
 		} else {
 			animator.SetBool ("grounded", true);
-			jumps_left = 2;
 		}
 	}
 
 	void OnCollisionExit2D(Collision2D collision) {
+		rigidbody2D.gravityScale = gravity_scale;
 		if (collision.gameObject.tag == "Climbable") {
-			animator.SetBool ("hanging", false);
-			rigidbody2D.gravityScale = 2.0f;
-			jumps_left = 1;
+			animator.SetBool ("hanging", false);	
+			//jumps_left = 3;
 		} else {
-			jumps_left = 2;
+			//jumps_left = 2;
 		}
 	}
 
