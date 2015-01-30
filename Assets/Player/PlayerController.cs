@@ -15,6 +15,7 @@ public class PlayerController : MonoBehaviour {
 	protected bool facing_right = true;
 	private int jumps_left = 2;
 	private float gravity_scale;
+	bool jumpReset = true;
 
 	// Use this for initialization
 	void Start () {	
@@ -30,19 +31,26 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		bool hanging = animator.GetBool("hanging");
-		if (Input.GetKey(KeyCode.Space) && rigidbody2D.velocity.y <= MAX_JUMP) {
-			animator.SetBool("grounded", false);
+		bool grounded = animator.GetBool("grounded");
+		if (Input.GetKey (KeyCode.Space) && rigidbody2D.velocity.y <= MAX_JUMP && jumpReset) {
+						//|| Input.GetKey(KeyCode.Space) && !isGrounded && rigidbody2D.velocity.y <= MAX_JUMP) {
+			animator.SetBool ("grounded", false);
 			if (hanging && jumps_left > 0) {
 				if (!facing_right) {
-					rigidbody2D.AddForce(new Vector2(2*jump_speed/5, jump_speed), ForceMode2D.Impulse);//velocity = new Vector2(jump_speed, jump_speed);
+						rigidbody2D.AddForce (new Vector2 (2 * jump_speed / 5, jump_speed), ForceMode2D.Impulse);//velocity = new Vector2(jump_speed, jump_speed);
 				} else {
-					rigidbody2D.AddForce(new Vector2(-2*jump_speed/5, jump_speed), ForceMode2D.Impulse);//.velocity = new Vector2(-jump_speed, jump_speed);
+					rigidbody2D.AddForce (new Vector2 (-2 * jump_speed / 5, jump_speed), ForceMode2D.Impulse);//.velocity = new Vector2(-jump_speed, jump_speed);
 				}
 				jumps_left -= 1;
-			} else if (jumps_left > 0){
-				rigidbody2D.AddForce(new Vector2(rigidbody2D.velocity.x, jump_speed/3), ForceMode2D.Impulse);//rigidbody2D.velocity = new Vector2(rigidbody2D.velocity.x, jump_speed);
+			} else if (jumps_left > 0) {
+				rigidbody2D.AddForce (new Vector2 (rigidbody2D.velocity.x, jump_speed / 3), ForceMode2D.Impulse);//rigidbody2D.velocity = new Vector2(rigidbody2D.velocity.x, jump_speed);
 				jumps_left -= 1;
 			}
+			if (jumps_left == 0) {
+				jumpReset = false;
+			}
+		} else if (!Input.GetKey (KeyCode.Space) && (hanging || grounded)) {
+				jumpReset = true;
 		}
 
 		// Control the flipping of the sprite when going left/right
