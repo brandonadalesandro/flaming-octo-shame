@@ -34,9 +34,9 @@ public class PlayerController : MonoBehaviour {
 			animator.SetBool("grounded", false);
 			if (hanging && jumps_left > 0) {
 				if (!facing_right) {
-					rigidbody2D.AddForce(new Vector2(2*jump_speed/15, jump_speed), ForceMode2D.Impulse);//velocity = new Vector2(jump_speed, jump_speed);
+					rigidbody2D.AddForce(new Vector2(2*jump_speed/5, jump_speed), ForceMode2D.Impulse);//velocity = new Vector2(jump_speed, jump_speed);
 				} else {
-					rigidbody2D.AddForce(new Vector2(-2*jump_speed/15, jump_speed), ForceMode2D.Impulse);//.velocity = new Vector2(-jump_speed, jump_speed);
+					rigidbody2D.AddForce(new Vector2(-2*jump_speed/5, jump_speed), ForceMode2D.Impulse);//.velocity = new Vector2(-jump_speed, jump_speed);
 				}
 				jumps_left -= 1;
 			} else if (jumps_left > 0){
@@ -58,13 +58,22 @@ public class PlayerController : MonoBehaviour {
 	
 	void OnCollisionEnter2D(Collision2D collision) {
 		jumps_left = 3;
+		if (collision.gameObject.name == "Goombers") {
+			print ("Game Over");
+			//Destroy(gameObject);
+		}
+		
 		if (collision.gameObject.tag == "Climbable") {
 			animator.SetBool ("hanging", true);
 			rigidbody2D.gravityScale = 0.0f;
+		} else if (collision.gameObject.name == "Goombers_top") {
+			rigidbody2D.AddForce(new Vector2(rigidbody2D.velocity.x, jump_speed), ForceMode2D.Impulse);
+			jumps_left = 0;
 		} else {
 			animator.SetBool ("grounded", true);
 		}
 	}
+
 
 	void OnCollisionExit2D(Collision2D collision) {
 		rigidbody2D.gravityScale = gravity_scale;
