@@ -37,11 +37,12 @@ public class PlayerController : MonoBehaviour {
 			animator.SetBool ("grounded", false);
 			if (hanging && jumps_left > 0) {
 				if (!facing_right) {
-						rigidbody2D.AddForce (new Vector2 (2 * jump_speed / 5, jump_speed), ForceMode2D.Impulse);//velocity = new Vector2(jump_speed, jump_speed);
+					rigidbody2D.AddForce (new Vector2 (2 * jump_speed / 5, jump_speed), ForceMode2D.Impulse);//velocity = new Vector2(jump_speed, jump_speed);
 				} else {
 					rigidbody2D.AddForce (new Vector2 (-2 * jump_speed / 5, jump_speed), ForceMode2D.Impulse);//.velocity = new Vector2(-jump_speed, jump_speed);
 				}
 				jumps_left -= 1;
+				jumpReset = false;
 			} else if (jumps_left > 0) {
 				rigidbody2D.AddForce (new Vector2 (rigidbody2D.velocity.x, jump_speed / 3), ForceMode2D.Impulse);//rigidbody2D.velocity = new Vector2(rigidbody2D.velocity.x, jump_speed);
 				jumps_left -= 1;
@@ -66,9 +67,10 @@ public class PlayerController : MonoBehaviour {
 	
 	void OnCollisionEnter2D(Collision2D collision) {
 		jumps_left = 3;
+		print (collision.gameObject.name);
 		if (collision.gameObject.name == "Goombers") {
 			print ("Game Over");
-			//Destroy(gameObject);
+			Destroy(this.gameObject);
 		}
 		
 		if (collision.gameObject.tag == "Climbable") {
